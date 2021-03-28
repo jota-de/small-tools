@@ -12,7 +12,10 @@ import argparse
 parser = argparse.ArgumentParser(
     prog="modinp.py",
     description="Modify input file keywords.",
-    epilog="For readability, option values should be given as OPTION=VALUE."
+    epilog=("For readability, option values should be given as OPTION=VALUE. "
+        "To add/modify multiple keywords the -a/-m option can be used more "
+        "than once."
+        )
 )
 parser.add_argument(
     "file",
@@ -27,18 +30,19 @@ parser.add_argument(
     help="keywords to be deleted from the input file"
 )
 parser.add_argument(
-    "-c", 
-    "--change", 
+    "-m", 
+    "--modify", 
     nargs="+",
     default=[],
     action="append",
-    help="keyword to be changed, followed by the new options"
+    help="keyword to be modified, followed by the new options"
 )
 parser.add_argument(
     "-a", 
     "--add", 
     nargs="+",
     default=[],
+    action="append",
     help="keyword to be added, followed by its options"
 )
 parser.add_argument(
@@ -66,7 +70,7 @@ kw_del = [d.upper() for d in args.delete]
 # Keywords to be changed
 kw_chg_keys = []
 kw_chg_dict = {}
-for c in args.change:
+for c in args.modify:
     upper_c = [x.upper() for x in c]
     key, *value = upper_c
     kw_chg_keys.append(key)
@@ -79,27 +83,43 @@ for c in args.add:
     upper_c = [x.upper() for x in c]
     key, *value = upper_c
     kw_add_keys.append(key)
-    kw_add_vals[key] = value
-
-found_kw = []
+    kw_add_dict[key] = value
 
 # Process file
 with open(file_name) as my_input:
     lines = my_input.readlines()
 
+add_new_kw = False
 for line in lines:
-    line_up = line.upper()
-    first = line_up.split()[0]
+    line = line.upper()
+    first = line.split()[0]
+
+    if add_new_kw:
+        new_line = line if first == "#" else "#\n"
+        for kw in kw_add_keys:
+            new_kw = kw + " " + " ".join(kw_add_dict[kw])
+            new_line += new_kw + "\n"
+        new_line = new_line + line
+
+        if not output_to_screen: 
+            with open(output_name, "a") as f: f.write(new_line)
+        else:
+            print(new_line[0:-1])
+        add_new_kw = False
+        continue
+
+    if first == "TITLE":
+        add_new_kw = True
 
     if first == "#":
-        new_line = line_up
+        new_line = line
     elif first in kw_del:
         continue
     elif first in kw_chg_keys:
         options = " ".join(kw_chg_dict[first])
         new_line = first + " " + options + "\n"
     else:
-        new_line = line_up
+        new_line = line
 
     if not output_to_screen: 
         with open(output_name, "a") as f: f.write(new_line)
