@@ -1,0 +1,21 @@
+TITLE Sample title
+#
+guess core
+GRID FIXED FINE
+ORBITALS CARTESIAN
+VXCTYPE BASIS
+print s
+scftype max=1
+#
+BASIS (dzvp)
+forcefield ff=opls-aa
+qm/mm
+ow 63
+hw 64
+end
+#
+GEOMETRY CARTESIAN BOHR
+OW     0.000000     0.000000     0.000000
+HW     0.000000     0.000000     1.795841
+HW     1.693137     0.000000    -0.598606
+HX     1.558762     2.000000     1.350933   -57
