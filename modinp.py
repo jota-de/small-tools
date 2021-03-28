@@ -12,12 +12,12 @@ import argparse
 parser = argparse.ArgumentParser(
     prog="modinp.py",
     description="Modify input file keywords.",
-    epilog="When applies, option values should be given as OPTION=VALUE."
+    epilog="For readability, option values should be given as OPTION=VALUE."
 )
 parser.add_argument(
-    "files",
-    nargs="+",
-    help="input files that will be changed."
+    "file",
+    nargs=1,
+    help="input file that will be changed."
 )
 parser.add_argument(
     "-d", 
@@ -31,6 +31,7 @@ parser.add_argument(
     "--change", 
     nargs="+",
     default=[],
+    action="append",
     help="keyword to be changed, followed by the new options"
 )
 parser.add_argument(
@@ -42,51 +43,62 @@ parser.add_argument(
 )
 parser.add_argument(
     "-o", 
-    "--outputs", 
-    nargs="+",
-    default=[],
-    help="output names for the modified inputs."
+    "--output", 
+    nargs=1,
+    default=None,
+    help="output name for the modified input."
 )
 
 
-# Get arguments and check if they are consistent
 args = parser.parse_args()
-
-file_names = args.files
-output_names = args.outputs
-
-nfiles = len(file_names)
-noutputs = len(output_names)
-
-if noutputs > 0:
-    assert(nfiles == noutputs), "Number of input/output files are not the same"
-    output_to_screen = False
-else:
+file_name = args.file[0]
+if args.output is None:
     output_to_screen = True
+else:
+    output_to_screen = False
+    output_name = args.output[0]
+    f = open(output_name, "w")
+    f.close()
 
-# Prepare lists of keywords
-kw_delete = [d.upper() for d in args.delete]
-kw_change = [c.upper() for c in args.change]
-kw_add = [a.upper() for a in args.add]
-    
-for i in range(nfiles):
-    with open(args.files[i]) as my_input:
-        for line in my_input.readlines():
-            line_up = line.upper()
-            first = line_up.split()[0]
+kw_del = [d.upper() for d in args.delete]
 
-            if first == "#":
-                new_line = line_up
-            elif first in kw_del:
-                continue
-            elif first == kw_chg[0]:
-                kw = kw_change[0]
-                new_line = " ".join(kw_chg)
-                new_line +="\n"
-            else:
-                new_line = line_up
+# Keywords to be changed
+kw_chg_keys = []
+kw_chg_dict = {}
+for c in args.change:
+    upper_c = [x.upper() for x in c]
+    key, *value = upper_c
+    kw_chg_keys.append(key)
+    kw_chg_dict[key] = value
 
-            if not output_to_screen: 
-                with open(outputs[i], "a") as f: f.write(new_line)
-            else:
-                print(new_line[0:-1])
+# Keywords to be added
+kw_add_keys = []
+kw_add_dict = {}
+for c in args.add:
+    upper_c = [x.upper() for x in c]
+    key, *value = upper_c
+    kw_add_keys.append(key)
+    kw_add_vals[key] = value
+
+# Process file
+with open(file_name) as my_input:
+    lines = my_input.readlines()
+
+for line in lines:
+    line_up = line.upper()
+    first = line_up.split()[0]
+
+    if first == "#":
+        new_line = line_up
+    elif first in kw_del:
+        continue
+    elif first in kw_chg_keys:
+        options = " ".join(kw_chg_dict[first])
+        new_line = first + " " + options + "\n"
+    else:
+        new_line = line_up
+
+    if not output_to_screen: 
+        with open(output_name, "a") as f: f.write(new_line)
+    else:
+        print(new_line[0:-1])
