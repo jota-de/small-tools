@@ -17,14 +17,14 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "file",
     nargs=1,
-    help="input file that will be changed."
+    help="input file that will be changed"
 )
 parser.add_argument(
     "-d", 
     "--delete",
     nargs="+",
     default=[],
-    help="keywords to be deleted from the input file."
+    help="keywords to be deleted from the input file"
 )
 parser.add_argument(
     "-c", 
@@ -39,19 +39,20 @@ parser.add_argument(
     "--add", 
     nargs="+",
     default=[],
-    help="keyword to be added, followed by its options."
+    help="keyword to be added, followed by its options"
 )
 parser.add_argument(
     "-o", 
     "--output", 
     nargs=1,
     default=None,
-    help="output name for the modified input."
+    help="output name for the modified input"
 )
 
-
 args = parser.parse_args()
+
 file_name = args.file[0]
+
 if args.output is None:
     output_to_screen = True
 else:
@@ -79,6 +80,8 @@ for c in args.add:
     key, *value = upper_c
     kw_add_keys.append(key)
     kw_add_vals[key] = value
+
+found_kw = []
 
 # Process file
 with open(file_name) as my_input:
