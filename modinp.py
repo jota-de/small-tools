@@ -92,7 +92,9 @@ with open(file_name) as my_input:
 add_new_kw = False
 for line in lines:
     line = line.upper()
-    first = line.split()[0]
+    split = line.split()
+    if len(split) == 0: continue
+    first = split[0]
 
     if add_new_kw:
         new_line = line if first == "#" else "#\n"
@@ -109,7 +111,7 @@ for line in lines:
         continue
 
     if first == "TITLE":
-        add_new_kw = True
+        add_new_kw = True if len(kw_add_keys) > 0 else False
 
     if first == "#":
         new_line = line
