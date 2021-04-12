@@ -298,7 +298,6 @@ if __name__ == '__main__':
             '-a',
             '--add',
             metavar='TAG',
-            nargs=1,
             default=None,
             help='add tag from current source and objects'
         )
@@ -306,7 +305,6 @@ if __name__ == '__main__':
             '-d',
             '--delete',
             metavar='TAG',
-            nargs=1,
             default=None,
             help='delete tag directory'
         )
@@ -314,7 +312,6 @@ if __name__ == '__main__':
             '-u',
             '--update',
             metavar='TAG',
-            nargs=1,
             default=None,
             help='update tag using current source and objects'
         )
@@ -338,16 +335,12 @@ if __name__ == '__main__':
         create_tag(name, description, source)
 
     if delete is not None:
-        tag = delete
-        tag_id = get_tag_id(tag)
+        tag_id = get_tag_id(delete)
         if tag_id != 4:
-            delete_tag(tag)
-    else:
-        print('delete is none')
+            delete_tag(delete)
 
     if update is not None:
-        tag = update[0]
-        tag_id = get_tag_id(tag)
+        tag_id = get_tag_id(update)
         if tag_id != 4:
-            update_tag(tag)
+            update_tag(update)
 
