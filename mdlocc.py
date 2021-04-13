@@ -325,14 +325,13 @@ if __name__ == '__main__':
         show_all_tags()
 
     if add is not None:
-        name = add[0]
-        print(f'Tag {name} description:')
+        print(f'Tag {add} description:')
         description = input()
         print('source directory relative to')
-        print(f'{working_dir}[/source]: ', end='')
+        print(f'{working_dir} [/source]: ', end='')
         source = input()
         if source == '': source = 'source'
-        create_tag(name, description, source)
+        create_tag(add, description, source)
 
     if delete is not None:
         tag_id = get_tag_id(delete)
