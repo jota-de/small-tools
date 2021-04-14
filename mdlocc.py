@@ -21,6 +21,9 @@ def check_demon():
 
     global demon_path
     global working_dir
+    global fotran
+
+    fortran = 'gfortran'
 
     demon_path = os.path.expandvars('$HOME/demon')
     if not os.path.exists(demon_path):
@@ -38,7 +41,7 @@ def check_demon():
             line = f.readline()
             vac = re.match('(\d.\d.\d).(\w+)', line)
             ver = vac.group(1)
-            ftn = vac.group(2)
+            fortran = vac.group(2)
     else:
         print('Choose a deMon version:')
         for i,ver in enumerate(versions):
@@ -260,6 +263,28 @@ def get_all_tags():
     return tags
 
 
+def import_tag(name):
+    tag_dir = os.path.join(tags_dir, name)
+    print('Delete current source and objects? [y/N]: ', end='')
+    answer = input().lower()
+    if answer == 'y':
+        sp.run(['rm', '-rf', f'{working_dir}/source/*'])
+        sp.run(['rm', '-rf', f'{working_dir}/object.*'])
+
+    sp.run([f'cp', '-r', f'{tag_dir}/src', f'{working_dir}/source'])
+    os.chdir(f'{tag_dir}/obj')
+    for obj in os.listdir():
+        sp.run([
+            f'cp',
+            '-r',
+            f'{tag_dir}/obj/{obj}/object.{obj}',
+            f'{tag_dir}/obj/{obj}/object.{obj}.{fortran}',
+            f'{working_dir}'
+        ])
+
+    return 0
+
+
 def add_comment(name, comment):
     tag_dir = os.path.join(tags_dir, name)
     tag_id = get_tag_id(name)
@@ -285,14 +310,19 @@ if __name__ == '__main__':
             prog='mdlocc.py', 
             description='Manage deMon local compilations.',
             fromfile_prefix_chars='@',
-            epilog=('Last change: 2021 Apr 11 '
-                '(See jota-de/small-tools at github)')
+            epilog='Last change: 2021 Apr 14'
         )
     parser.add_argument(
             '-l',
             '--list',
             action='store_true',
             help='list all tags in working directory'
+        )
+    parser.add_argument(
+            '-c',
+            '--calculate',
+            action='store_true',
+            help='calculate current tag'
         )
     parser.add_argument(
             '-a',
@@ -306,7 +336,7 @@ if __name__ == '__main__':
             '--delete',
             metavar='TAG',
             default=None,
-            help='delete tag directory'
+            help='delete given tag'
         )
     parser.add_argument(
             '-u',
@@ -315,11 +345,20 @@ if __name__ == '__main__':
             default=None,
             help='update tag using current source and objects'
         )
+    parser.add_argument(
+            '-g',
+            '--get',
+            metavar='TAG',
+            default=None,
+            help='get source and objects from tag'
+        )
 
     args = parser.parse_args()
     add = args.add
     delete = args.delete
     update = args.update
+    calculate = args.calculate
+    get = args.get
 
     if args.list:
         show_all_tags()
@@ -342,4 +381,13 @@ if __name__ == '__main__':
         tag_id = get_tag_id(update)
         if tag_id != 4:
             update_tag(update)
+
+    if calculate:
+        tag_id = calculate_tag_id('source')
+        print(f'Current source has tag: {tag_id[-8:]}')
+
+    if get is not None:
+        tag_id = get_tag_id(get)
+        if tag_id != 4:
+            import_tag(get)
 
